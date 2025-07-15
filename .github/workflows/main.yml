@@ -1,9 +1,4 @@
-name: Deploy MultiDocker
-
-on:
-  push:
-    branches:
-      - main 
+name: Deploy Multidocker
 
 jobs:
   build:
@@ -35,7 +30,6 @@ jobs:
           application_name: multi-docker
           environment_name: Multi-docker-env
           existing_bucket_name: elasticbeanstalk-ap-southeast-1-266097584661
-          bucket_path: docker-multi
           region: ap-southeast-1
           version_label: ${{ github.sha }}
           deployment_package: deploy.zip
