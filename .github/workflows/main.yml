@@ -1,8 +1,9 @@
 name: Deploy MultiDocker
+
 on:
   push:
     branches:
-      - main # check your repo, your default branch might be master!
+      - main 
 
 jobs:
   build:
@@ -26,14 +27,15 @@ jobs:
       - name: Generate deployment package
         run: zip -r deploy.zip . -x '*.git*'
 
-      # - name: Deploy to EB
-      #   uses: fatihidris/beanstalk-deploy@v20
-      #   with:
-      #     aws_access_key: ${{ secrets.AWS_ACCESS_KEY }}
-      #     aws_secret_key: ${{ secrets.AWS_SECRET_KEY }}
-      #     application_name: multi-docker
-      #     environment_name: Multi-docker-env
-      #     existing_bucket_name: elasticbeanstalk-ap-southeast-1-923445559289
-      #     region: ap-southeast-1
-      #     version_label: ${{ github.sha }}
-      #     deployment_package: deploy.zip
+      - name: Deploy to EB
+        uses: einaregilsson/beanstalk-deploy@v21
+        with:
+          aws_access_key: ${{ secrets.AWS_ACCESS_KEY }}
+          aws_secret_key: ${{ secrets.AWS_SECRET_KEY }}
+          application_name: multi-docker
+          environment_name: Multi-docker-env
+          existing_bucket_name: elasticbeanstalk-ap-southeast-1-266097584661
+          bucket_path: docker-multi
+          region: ap-southeast-1
+          version_label: ${{ github.sha }}
+          deployment_package: deploy.zip
