@@ -1,4 +1,8 @@
-name: Deploy Multidocker
+name: Deploy MultiDocker
+on:
+  push:
+    branches:
+      - main # check your repo, your default branch might be master!
 
 jobs:
   build:
@@ -6,18 +10,18 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-      - run: docker build -t fatihidris/react-test-up -f ./client/Dockerfile.dev ./client
-      - run: docker run -e CI=true fatihidris/react-test-up npm test
+      - run: docker build -t fatihidris/react-test -f ./client/Dockerfile.dev ./client
+      - run: docker run -e CI=true fatihidris/react-test npm test
 
-      - run: docker build -t fatihidris/multi-client-up ./client
-      - run: docker build -t fatihidris/multi-nginx-up ./nginx
-      - run: docker build -t fatihidris/multi-server-up ./server
-      - run: docker build -t fatihidris/multi-worker-up ./worker
+      - run: docker build -t fatihidris/multi-client ./client
+      - run: docker build -t fatihidris/multi-nginx ./nginx
+      - run: docker build -t fatihidris/multi-server ./server
+      - run: docker build -t fatihidris/multi-worker ./worker
 
-      - run: docker push fatihidris/multi-client-up
-      - run: docker push fatihidris/multi-nginx-up
-      - run: docker push fatihidris/multi-server-up
-      - run: docker push fatihidris/multi-worker-up
+      - run: docker push fatihidris/multi-client
+      - run: docker push fatihidris/multi-nginx
+      - run: docker push fatihidris/multi-server
+      - run: docker push fatihidris/multi-worker
 
       - name: Generate deployment package
         run: zip -r deploy.zip . -x '*.git*'
