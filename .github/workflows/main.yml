@@ -1,36 +1,56 @@
 name: Deploy MultiDocker
+
 on:
   push:
     branches:
-      - main # check your repo, your default branch might be master!
+      - main  # Change this if your default branch is 'master' or something else
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v3
-      - run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-      - run: docker build -t fatihidris/react-test -f ./client/Dockerfile.dev ./client
-      - run: docker run -e CI=true fatihidris/react-test npm test
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-      - run: docker build -t fatihidris/multi-client ./client
-      - run: docker build -t fatihidris/multi-nginx ./nginx
-      - run: docker build -t fatihidris/multi-server ./server
-      - run: docker build -t fatihidris/multi-worker ./worker
+      - name: Log in to DockerHub
+        run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
 
-      - run: docker push fatihidris/multi-client
-      - run: docker push fatihidris/multi-nginx
-      - run: docker push fatihidris/multi-server
-      - run: docker push fatihidris/multi-worker
+      - name: Run React client tests
+        run: |
+          docker build -t fatihidris/react-test -f ./client/Dockerfile.dev ./client
+          docker run -e CI=true fatihidris/react-test npm test
 
-      - name: Generate deployment package
-      - run: |
-          ls -l
+      - name: Build Docker images
+        run: |
+          docker build -t fatihidris/multi-client ./client
+          docker build -t fatihidris/multi-nginx ./nginx
+          docker build -t fatihidris/multi-server ./server
+          docker build -t fatihidris/multi-worker ./worker
+
+      - name: Push Docker images to DockerHub
+        run: |
+          docker push fatihidris/multi-client
+          docker push fatihidris/multi-nginx
+          docker push fatihidris/multi-server
+          docker push fatihidris/multi-worker
+
+      - name: Check required deployment files
+        run: |
+          echo "==== LS ===="
+          ls -al
+          echo "==== Dockerrun.aws.json ===="
           cat Dockerrun.aws.json
+          echo "==== docker-compose.yml ===="
           cat docker-compose.yml
-          zip deploy.zip Dockerrun.aws.json docker-compose.yml
 
-      - name: Deploy to EB
+      - name: Generate deployment package (only Dockerrun and Compose)
+        run: zip deploy.zip Dockerrun.aws.json docker-compose.yml
+
+      - name: Check contents of deploy.zip
+        run: unzip -l deploy.zip
+
+      - name: Deploy to Elastic Beanstalk
         uses: einaregilsson/beanstalk-deploy@v21
         with:
           aws_access_key: ${{ secrets.AWS_ACCESS_KEY }}
